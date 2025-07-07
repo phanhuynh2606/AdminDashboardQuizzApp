@@ -1,6 +1,5 @@
-import { Router } from 'express';
-
-const router = Router();
+const express = require('express');
+const router = express.Router();
 
 // Placeholder student list
 const students = [];
@@ -15,4 +14,4 @@ router.post('/', (req, res) => {
   res.status(201).json(student);
 });
 
-export default router;
+module.exports = router;
