@@ -13,13 +13,13 @@ const examSchema = new mongoose.Schema({
     unique: true,
     trim: true
   }, // 'PRM392_FE_SPRING25'
-  
+
   subjectId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Subject',
     required: true
   },
-  
+
   // LƯU TRỰC TIẾP ĐỂ QUERY NHANH
   subjectCode: {
     type: String,
@@ -33,7 +33,7 @@ const examSchema = new mongoose.Schema({
     uppercase: true,
     trim: true
   }, // 'SPRING25', 'SUMMER24'
-  
+
   examTypeId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ExamType',
@@ -45,7 +45,7 @@ const examSchema = new mongoose.Schema({
     uppercase: true,
     trim: true
   }, // 'FE', 'PE', 'QUIZ'
-  
+
   description: String,
   duration: {
     type: Number,
