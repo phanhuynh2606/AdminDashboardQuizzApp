@@ -30,6 +30,19 @@ const userSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  refreshToken: {
+    type: String,
+    default: null
+  },
+  lastLogin: {
+    type: Date,
+    default: null
+  },
+  deviceType: {
+    type: String,
+    enum: ['web', 'android'],
+    default: 'android'
   }
 }, { timestamps: true });
 
