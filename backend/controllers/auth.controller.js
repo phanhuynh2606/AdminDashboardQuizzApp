@@ -4,7 +4,7 @@ const User = require("../models/user.model.js");
 
 // Generate Access Token (short-lived)
 const generateAccessToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "15m" });
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30m" });
 };
 
 // Generate Refresh Token (long-lived)
@@ -15,10 +15,6 @@ const generateRefreshToken = (id) => {
 // Validate input
 const validateInput = (fields) => {
   const errors = {};
-  
-  if (fields.username && (fields.username.length < 3 || fields.username.length > 20)) {
-    errors.username = "Username must be between 3 and 20 characters";
-  }
   
   if (fields.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email)) {
     errors.email = "Please provide a valid email";
@@ -32,14 +28,14 @@ const validateInput = (fields) => {
 };
 
 const register = async (req, res) => {
-  const { username, email, password, fullName, deviceType = 'android', role = 'student' } = req.body;
+  const { email, password, fullName, deviceType = 'android', role = 'student' } = req.body;
   
   // Validate required fields
-  if (!username || !email || !password) {
-    return res.status(400).json({ 
+  if (!email || !password) {
+    return res.status(400).json({
       success: false,
       message: "All fields are required",
-      errors: { general: "Username, email, and password are required" }
+      errors: { general: "Email and password are required" }
     });
   }
 
@@ -61,7 +57,7 @@ const register = async (req, res) => {
   }
 
   // Validate input format
-  const validationErrors = validateInput({ username, email, password });
+  const validationErrors = validateInput({email, password });
   if (Object.keys(validationErrors).length > 0) {
     return res.status(400).json({
       success: false,
@@ -72,16 +68,13 @@ const register = async (req, res) => {
 
   try {
     // Check if user already exists
-    const existingUser = await User.findOne({ 
-      $or: [{ email }, { username }] 
-    });
+    const existingUser = await User.findOne({email: email});
     
     if (existingUser) {
-      const field = existingUser.email === email ? 'email' : 'username';
       return res.status(400).json({ 
         success: false,
-        message: `${field.charAt(0).toUpperCase() + field.slice(1)} already exists`,
-        errors: { [field]: `This ${field} is already taken` }
+        message: "Email already exists",
+        errors: { email: "This email is already taken" }
       });
     }
 
@@ -90,7 +83,6 @@ const register = async (req, res) => {
     
     // Create user
     const user = await User.create({ 
-      username, 
       email, 
       password: hashedPassword,
       fullName,
@@ -113,7 +105,6 @@ const register = async (req, res) => {
       data: {
         user: {
           _id: user._id,
-          username: user.username,
           email: user.email,
           fullName: user.fullName,
           role: user.role,
@@ -224,11 +215,11 @@ const login = async (req, res) => {
       data: {
         user: {
           _id: user._id,
-          username: user.username,
           email: user.email,
           fullName: user.fullName,
           role: user.role,
           deviceType: deviceType,
+          createdAt: user.createdAt,
           lastLogin: new Date()
         },
         accessToken,
@@ -374,10 +365,60 @@ const getProfile = async (req, res) => {
   }
 };
 
+const changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({
+      success: false,
+      message: "Current and new passwords are required",
+      errors: { general: "Please provide both current and new passwords" }
+    });
+  }
+
+  try {
+    // Find user
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    // Check current password
+    const isMatch = await bcryptjs.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Current password is incorrect",
+        errors: { general: "Current password is incorrect" }
+      });
+    }
+
+    // Update password
+    // Hash password
+    const hashedPassword = await bcryptjs.hash(newPassword, 12);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Password changed successfully"
+    });
+  } catch (err) {
+    console.error("Change password error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
   refreshToken,
   logout,
-  getProfile
+  getProfile,
+  changePassword
 };
