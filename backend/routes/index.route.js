@@ -11,7 +11,6 @@ const initialRoutes = (app) => {
             auth: '/api/auth',
             admin: '/api/admin',
             student: '/api/student',
-            students: '/api/students'
          }
       });
    });
@@ -24,6 +23,7 @@ const initialRoutes = (app) => {
    
    // Student routes (android only)
    app.use("/api/student", studentRoute);
+   
    
 }
 

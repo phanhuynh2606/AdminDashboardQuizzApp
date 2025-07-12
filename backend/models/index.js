@@ -9,6 +9,8 @@ const Exam = require('./exam.model');
 const { QuestionBank, ExamQuestion } = require('./question.model');
 const PracticeHistory = require('./practiceHistory.model');
 const User = require('./user.model');
+const Notification = require('./notification.model');
+const ActivityLog = require('./activityLog.model');
 
 module.exports = {
   Semester,
@@ -18,7 +20,9 @@ module.exports = {
   QuestionBank,
   ExamQuestion,
   PracticeHistory,
-  User
+  User,
+  Notification,
+  ActivityLog
 };
 
 // ========================================
