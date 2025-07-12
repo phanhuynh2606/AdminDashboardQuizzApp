@@ -16,6 +16,9 @@ const semesterSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  link:{
+    type: String,
+  },
   createdAt: {
     type: Date,
     default: Date.now
