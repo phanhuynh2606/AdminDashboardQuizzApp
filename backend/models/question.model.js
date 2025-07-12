@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 // ========================================
 // QUESTION BANK - Kho câu hỏi mẫu
@@ -7,74 +7,107 @@ const questionBankSchema = new mongoose.Schema({
   questionText: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
   },
-  
+
   // PHÂN LOẠI
   subjectCode: {
     type: String,
     required: true,
     uppercase: true,
-    trim: true
+    trim: true,
   }, // 'PRM392', 'EXE101'
   examTypeCode: {
     type: String,
     required: true,
     uppercase: true,
-    trim: true
+    trim: true,
   }, // 'FE', 'PE', 'QUIZ'
-  
-  answers: [{
-    answerText: {
-      type: String,
-      required: true,
-      trim: true
+
+  // Options for multiple choice
+  options: [
+    {
+      letter: {
+        type: String,
+        required: true, // A, B, C, D
+      },
+      text: {
+        type: String,
+        required: true, // Option content
+      },
+      isCorrect: {
+        type: Boolean,
+        default: false,
+      },
     },
-    answerOrder: {
+  ],
+  correctAnswer: {
+    answers: [String], // ["A", "B"] for multiple choice, ["A"] for single choice
+    answer: String, // Legacy single answer field (for backward compatibility)
+    explanation: String, // Explanation for the answer(s)
+    confidence: {
       type: String,
-      enum: ['A', 'B', 'C', 'D'],
-      required: true
+      enum: ["EASY", "MEDIUM", "HIGH"],
+      default: "MEDIUM",
     },
-    isCorrect: {
-      type: Boolean,
-      default: false
-    }
-  }],
-  
+    source: {
+      type: String,
+      enum: ["comments", "manual", "verified", "gemini-analysis"],
+      default: "comments",
+    },
+  },
+  comments: [
+    {
+      content: String,
+      index: Number,
+      extractedAnswer: String, // A, B, C, D if detected
+    },
+  ],
   explanation: String, // Giải thích đáp án
   imageUrl: String, // URL hình ảnh
+  imageData: {
+    originalUrl: String,    // Direct image URL
+    localPath: String,      // Local file path
+    filename: String,       // File name
+    fileSize: Number,       // In bytes
+    downloadedAt: Date,
+    downloadSuccess: {
+        type: Boolean,
+        default: false
+    }
+},
   difficulty: {
     type: String,
-    enum: ['EASY', 'MEDIUM', 'HARD'],
-    default: 'MEDIUM'
+    enum: ["EASY", "MEDIUM", "HARD"],
+    default: "MEDIUM",
   },
   defaultPoints: {
     type: Number,
-    default: 1
+    default: 1,
   },
   tags: [String], // ['android', 'activity', 'lifecycle']
-  
+
   // METADATA
   usageCount: {
     type: Number,
-    default: 0
+    default: 0,
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: "User",
   },
   isActive: {
     type: Boolean,
-    default: true
+    default: true,
   },
   createdAt: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   updatedAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 // ========================================
@@ -83,37 +116,37 @@ const questionBankSchema = new mongoose.Schema({
 const examQuestionSchema = new mongoose.Schema({
   examId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Exam',
-    required: true
+    ref: "Exam",
+    required: true,
   },
   questionBankId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'QuestionBank',
-    required: true
+    ref: "QuestionBank",
+    required: true,
   },
   questionNumber: {
     type: Number,
-    required: true
+    required: true,
   }, // Thứ tự trong đề: 1, 2, 3...
-  
+
   // OVERRIDE từ QuestionBank nếu cần
   customQuestionText: String, // Nếu muốn chỉnh sửa
   customPoints: Number, // Override điểm
   customExplanation: String, // Override giải thích
-  
+
   // CACHE cho performance
   subjectCode: String,
   examTypeCode: String,
   semester: String,
-  
+
   isActive: {
     type: Boolean,
-    default: true
+    default: true,
   },
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 // ========================================
@@ -138,21 +171,21 @@ examQuestionSchema.index({ semester: 1, subjectCode: 1, examTypeCode: 1 });
 // ========================================
 
 // Lấy questionText từ QuestionBank hoặc custom
-examQuestionSchema.virtual('finalQuestionText').get(function() {
+examQuestionSchema.virtual("finalQuestionText").get(function () {
   return this.customQuestionText || this.questionBank?.questionText;
 });
 
-examQuestionSchema.virtual('finalPoints').get(function() {
+examQuestionSchema.virtual("finalPoints").get(function () {
   return this.customPoints || this.questionBank?.defaultPoints || 1;
 });
 
-examQuestionSchema.virtual('finalExplanation').get(function() {
+examQuestionSchema.virtual("finalExplanation").get(function () {
   return this.customExplanation || this.questionBank?.explanation;
 });
 
 // Populate questionBank by default
-examQuestionSchema.pre(/^find/, function() {
-  this.populate('questionBankId');
+examQuestionSchema.pre(/^find/, function () {
+  this.populate("questionBankId");
 });
 
 // ========================================
@@ -160,27 +193,25 @@ examQuestionSchema.pre(/^find/, function() {
 // ========================================
 
 // Update usageCount khi tạo ExamQuestion
-examQuestionSchema.post('save', async function() {
+examQuestionSchema.post("save", async function () {
   if (this.isNew) {
-    await mongoose.model('QuestionBank').findByIdAndUpdate(
-      this.questionBankId,
-      { $inc: { usageCount: 1 } }
-    );
+    await mongoose
+      .model("QuestionBank")
+      .findByIdAndUpdate(this.questionBankId, { $inc: { usageCount: 1 } });
   }
 });
 
 // Decrease usageCount khi xóa ExamQuestion
-examQuestionSchema.post('findOneAndDelete', async function(doc) {
+examQuestionSchema.post("findOneAndDelete", async function (doc) {
   if (doc) {
-    await mongoose.model('QuestionBank').findByIdAndUpdate(
-      doc.questionBankId,
-      { $inc: { usageCount: -1 } }
-    );
+    await mongoose
+      .model("QuestionBank")
+      .findByIdAndUpdate(doc.questionBankId, { $inc: { usageCount: -1 } });
   }
 });
 
 // Update timestamp
-questionBankSchema.pre('save', function() {
+questionBankSchema.pre("save", function () {
   this.updatedAt = Date.now();
 });
 
@@ -188,10 +219,10 @@ questionBankSchema.pre('save', function() {
 // EXPORT MODELS
 // ========================================
 
-const QuestionBank = mongoose.model('QuestionBank', questionBankSchema);
-const ExamQuestion = mongoose.model('ExamQuestion', examQuestionSchema);
+const QuestionBank = mongoose.model("QuestionBank", questionBankSchema);
+const ExamQuestion = mongoose.model("ExamQuestion", examQuestionSchema);
 
 module.exports = {
   QuestionBank,
-  ExamQuestion
+  ExamQuestion,
 };

@@ -18,15 +18,13 @@ const subjectSchema = new mongoose.Schema({
     ref: 'Semester',
     required: true
   }, 
-  semesterDisplay: {
-    type: String,
-    required: true,
-    trim: true
-  }, // 'Kỳ 8', 'Kỳ 7', 'Kỳ Hè 2024'
   description: String,
   isActive: {
     type: Boolean,
     default: true
+  },
+  link:{
+    type: String,
   },
   createdAt: {
     type: Date,

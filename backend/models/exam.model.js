@@ -64,6 +64,9 @@ const examSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  link:{
+    type: String,
+  },
   createdAt: {
     type: Date,
     default: Date.now
