@@ -3,6 +3,7 @@ const { protect, authorize, requireAndroid } = require('../middleware/auth.middl
 const { getActiveSemesters } = require('../controllers/semester.controller');
 const { getSubjectsBySemester } = require('../controllers/subject.controller');
 const { getExamsForStudent } = require('../controllers/exam.controller');
+const { getQuestionsForStudent } = require('../controllers/question.controller');
 const router = express.Router();
 
 // Student routes - chỉ cho mobile app
@@ -13,19 +14,7 @@ router.get('/subjects/semester/:semesterId', getSubjectsBySemester);
 router.route('/exams/:subjectId')
   .get(getExamsForStudent)
 
-
-
-// Student app routes sẽ thêm sau
-router.get('/exams', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Available exams for student',
-    data: {
-      user: req.user,
-      exams: []
-    }
-  });
-});
+router.get('/questions/:subjectCode', getQuestionsForStudent);
 
 router.get('/profile', (req, res) => {
   res.json({
