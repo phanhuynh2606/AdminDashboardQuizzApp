@@ -698,6 +698,47 @@ const duplicateQuestion = async (req, res) => {
     });
   }
 };
+// @route   GET /api/student/questions/:subjectCode
+// @access  Private/Student
+const getQuestionsForStudent = async (req, res) => {
+  try {
+    const { subjectCode } = req.params;
+
+    if (!subjectCode) {
+      return res.status(400).json({
+        success: false,
+        message: 'Mã môn học không được để trống'
+      });
+    } 
+    const questions = await QuestionBank.find({
+      subjectCode: subjectCode.toUpperCase(),
+      isActive: true
+    }) 
+    .sort({ createdAt: -1 })
+    .lean();
+
+    if (questions.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy câu hỏi nào cho môn học này'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: questions
+    });
+
+  } catch (error) {
+    console.error('Get questions for student error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi server khi lấy danh sách câu hỏi cho sinh viên',
+      error: error.message
+    });
+  }
+};
+
 
 module.exports = {
   getQuestions,
@@ -711,5 +752,6 @@ module.exports = {
   bulkUpdateQuestions,
   bulkDeleteQuestions,
   duplicateQuestion,
+  getQuestionsForStudent,
   upload
 }; 
