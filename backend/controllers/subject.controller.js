@@ -21,7 +21,7 @@ const getSubjects = async (req, res) => {
 
     // Build filter object
     const filter = {};
-    
+
     // Semester filter
     if (semester !== 'all') {
       // Convert string to ObjectId for proper filtering
@@ -34,12 +34,12 @@ const getSubjects = async (req, res) => {
         });
       }
     }
-    
+
     // Status filter
     if (status !== 'all') {
       filter.isActive = status === 'active';
     }
-    
+
     // Search filter
     if (search) {
       filter.$or = [
@@ -246,10 +246,10 @@ const updateSubject = async (req, res) => {
 
     // Check if subject code is unique in the semester (excluding current subject)
     if (subjectCode && semester) {
-      const existingSubject = await Subject.findOne({ 
-        subjectCode: subjectCode.toUpperCase(), 
+      const existingSubject = await Subject.findOne({
+        subjectCode: subjectCode.toUpperCase(),
         semester,
-        _id: { $ne: req.params.id } 
+        _id: { $ne: req.params.id }
       });
       if (existingSubject) {
         return res.status(400).json({
@@ -463,12 +463,12 @@ const getSubjectStats = async (req, res) => {
 // @access  Private/Admin/Web
 const getSubjectsBySemester = async (req, res) => {
   try {
-    const subjects = await Subject.find({ 
+    const subjects = await Subject.find({
       semester: req.params.semesterId,
-      isActive: true 
+      isActive: true
     })
       .sort({ subjectCode: 1 })
-      .select('subjectCode subjectName description');
+      .select('subjectCode subjectName description').populate('semester', 'name');
 
     res.json({
       success: true,

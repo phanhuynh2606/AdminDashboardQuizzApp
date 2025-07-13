@@ -191,6 +191,42 @@ const getExamById = async (req, res) => {
   }
 };
 
+// @desc    Get exams for student by Subject ID
+// @route   GET /api/student/exams
+// @access  Private/Student
+const getExamsForStudent = async (req, res) => {
+  try {
+    const { subjectId } = req.params;
+    if (!subjectId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Mã môn học không được để trống'
+      });
+    }
+    const exams = await Exam.find({ subjectId, isActive: true, isPublished: true })
+      .populate('subjectId', 'subjectCode subjectName semester')
+      .populate('examTypeId', 'typeName typeCode description')
+      .sort({ createdAt: -1 });
+    if (exams.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy đề thi cho môn học này'
+      });
+    }
+    res.json({
+      success: true,
+      data: exams
+    });
+  } catch (error) {
+    console.error('Get exams for student error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi server khi lấy danh sách đề thi cho sinh viên',
+      error: error.message
+    });
+  }
+};
+
 // @desc    Create new exam
 // @route   POST /api/admin/exams
 // @access  Private/Admin/Web
@@ -733,5 +769,6 @@ module.exports = {
   toggleExamPublished,
   getExamStats,
   getExamTypes,
-  duplicateExam
+  duplicateExam,
+  getExamsForStudent
 }; 
