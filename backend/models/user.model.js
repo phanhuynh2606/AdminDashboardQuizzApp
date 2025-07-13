@@ -77,7 +77,11 @@ const userSchema = new mongoose.Schema({
   refreshToken: {
     type: String,
     default: null
-  }
+  },
+  fcmTokens: [{
+    type: String,
+    trim: true
+  }] // Array to store multiple FCM tokens for user's devices
 }, { timestamps: true });
 
 // Virtual for status (convert isActive to status string)

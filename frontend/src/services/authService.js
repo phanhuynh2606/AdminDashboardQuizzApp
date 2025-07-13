@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+import apiClient, { resetRefreshTracking } from './apiClient';
 
 class AuthService {
   // Login admin user
@@ -14,6 +14,10 @@ class AuthService {
         // Store tokens and user info
         localStorage.setItem('accessToken', data.accessToken);
         localStorage.setItem('user', JSON.stringify(data.user));
+        
+        // Reset refresh tracking on successful login
+        resetRefreshTracking();
+        
         return {
           success: true,
           message: response.message,
@@ -39,11 +43,17 @@ class AuthService {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('user');
       
+      // Reset refresh tracking
+      resetRefreshTracking();
+      
       return { success: true };
     } catch (error) {
       // Even if API call fails, clear local storage
       localStorage.removeItem('accessToken');
       localStorage.removeItem('user');
+      
+      // Reset refresh tracking
+      resetRefreshTracking();
       
       return { success: true };
     }

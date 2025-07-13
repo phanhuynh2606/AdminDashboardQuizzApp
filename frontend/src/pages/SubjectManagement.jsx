@@ -328,6 +328,7 @@ const SubjectManagement = () => {
       dataIndex: 'semester',
       key: 'semester',
       width: 150,
+      sorter: true,
       render: (semester) => (
         <Tag color="green">
           {semester?.name || 'Không xác định'}
@@ -339,6 +340,7 @@ const SubjectManagement = () => {
       dataIndex: 'isActive',
       key: 'isActive',
       width: 120,
+      sorter: true,
       render: (isActive) => (
         <Tag color={isActive ? 'green' : 'red'}>
           {isActive ? 'Hoạt động' : 'Không hoạt động'}
@@ -348,9 +350,11 @@ const SubjectManagement = () => {
     {
       title: 'Số đề thi',
       key: 'examCount',
+      dataIndex: 'examCount',
       width: 100,
-      render: (_, record) => (
-        <Badge count={record.examCount || 0} overflowCount={99}>
+      sorter: true,
+      render: (count) => (
+        <Badge count={count || 0} overflowCount={99} showZero>
           <FileTextOutlined style={{ fontSize: '16px' }} />
         </Badge>
       )
@@ -397,14 +401,14 @@ const SubjectManagement = () => {
             <Tooltip title="Chỉnh sửa">
               <Button
                 type="text"
-                icon={<EditOutlined />}
+                icon={<EditOutlined style={{ color: 'orangered' }} />}
                 onClick={() => handleCreateEdit(record)}
               />
             </Tooltip>
             <Tooltip title={record.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}>
               <Button
                 type="text"
-                icon={<SettingOutlined />}
+                icon={<SettingOutlined style={{ color: 'darkblue' }} />}
                 onClick={() => handleToggleStatus(record._id)}
               />
             </Tooltip>

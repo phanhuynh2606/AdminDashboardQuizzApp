@@ -4,7 +4,7 @@ const User = require("../models/user.model.js");
 
 // Generate Access Token (short-lived)
 const generateAccessToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30m" });
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "15m" });
 };
 
 // Generate Refresh Token (long-lived)
@@ -258,10 +258,11 @@ const refreshToken = async (req, res) => {
   const refreshTokenToUse = token || cookieToken;
   
   if (!refreshTokenToUse) {
+    console.log("No refresh token provided");
     return res.status(401).json({
       success: false,
-      message: "Refresh token required",
-      errors: { general: "No refresh token provided" }
+      message: "Invalid refresh token",
+      errors: { general: "Token is invalid or expired" }
     });
   }
 
@@ -272,10 +273,14 @@ const refreshToken = async (req, res) => {
     // Find user with this refresh token
     const user = await User.findOne({ 
       _id: decoded.id, 
-      refreshToken: refreshTokenToUse 
+      refreshToken: refreshTokenToUse,
+      isActive: true
     });
     
     if (!user) {
+      console.log("User not found or refresh token mismatch");
+      // Clear invalid refresh token
+      res.clearCookie('refreshToken');
       return res.status(401).json({
         success: false,
         message: "Invalid refresh token",
@@ -286,6 +291,7 @@ const refreshToken = async (req, res) => {
     // Generate new access token
     const newAccessToken = generateAccessToken(user._id);
     
+    console.log("Token refreshed successfully for user:", user.email);
     res.json({
       success: true,
       message: "Token refreshed successfully",
@@ -296,8 +302,24 @@ const refreshToken = async (req, res) => {
       }
     });
   } catch (err) {
-    console.error("Token refresh error:", err);
-    res.status(401).json({
+    console.error("Token refresh error:", err.message);
+    
+    // Clear invalid refresh token cookie
+    res.clearCookie('refreshToken');
+    
+    // If token is expired or invalid, also remove from database
+    if (refreshTokenToUse) {
+      try {
+        await User.findOneAndUpdate(
+          { refreshToken: refreshTokenToUse },
+          { refreshToken: null }
+        );
+      } catch (cleanupError) {
+        console.error("Error cleaning up refresh token:", cleanupError);
+      }
+    }
+    
+    return res.status(401).json({
       success: false,
       message: "Invalid refresh token",
       errors: { general: "Token is invalid or expired" }

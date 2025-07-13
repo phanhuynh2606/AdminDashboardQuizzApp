@@ -58,8 +58,15 @@ const authReducer = (state, action) => {
   }
 };
 
-// Create context
-const AuthContext = createContext();
+// Create context with default value
+const AuthContext = createContext({
+  user: null,
+  isAuthenticated: false,
+  loading: true,
+  login: () => {},
+  logout: () => {},
+  getDashboardData: () => {}
+});
 
 // Auth provider component
 export const AuthProvider = ({ children }) => {
