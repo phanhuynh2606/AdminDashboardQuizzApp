@@ -1,4 +1,4 @@
-const { Exam, ExamQuestion, QuestionBank, ExamType } = require('../models');
+const { Exam, ExamQuestion, QuestionBank, ExamType, PracticeHistory } = require('../models');
 const Subject = require('../models/subject.model');
 const { ActivityLog } = require('../models');
 const mongoose = require('mongoose');
@@ -830,7 +830,44 @@ const duplicateExam = async (req, res) => {
     });
   }
 };
+const savePracticeHistory = async (req, res) => {
+  try {
+    const {
+      examId, 
+      subjectCode,
+      examTypeCode,
+      userSessionId,
+      startTime,
+      endTime,
+      totalQuestions,
+      correctAnswers,
+      score,
+      timeSpent,
+      answers,
+      isCompleted
+    } = req.body;
 
+    const history = new PracticeHistory({
+      examId, 
+      subjectCode,
+      examTypeCode,
+      userSessionId,
+      startTime,
+      endTime,
+      totalQuestions,
+      correctAnswers,
+      score,
+      timeSpent,
+      answers,
+      isCompleted
+    });
+    await history.save();
+    res.status(201).json({ success: true, data: history });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: 'Server Error' });
+  }
+};
 
 // @desc    Get exam questions
 // @route   GET /api/admin/exams/:id/questions  
@@ -897,7 +934,6 @@ const getExamQuestions = async (req, res) => {
     });
   }
 };
-
 module.exports = {
   getExams,
   getExamById,
@@ -910,5 +946,6 @@ module.exports = {
   getExamTypes,
   duplicateExam,
   getExamsForStudent,
+  savePracticeHistory,
   getExamQuestions
 }; 
