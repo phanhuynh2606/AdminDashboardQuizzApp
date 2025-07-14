@@ -8,7 +8,7 @@ const practiceHistorySchema = new mongoose.Schema({
     required: true
   },
   // Lưu thông tin để query nhanh
-  semester: String,
+ 
   subjectCode: String,
   examTypeCode: String,
   

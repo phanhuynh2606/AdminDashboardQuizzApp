@@ -2,7 +2,7 @@ const express = require('express');
 const { protect, authorize, requireAndroid } = require('../middleware/auth.middleware');
 const { getActiveSemesters } = require('../controllers/semester.controller');
 const { getSubjectsBySemester } = require('../controllers/subject.controller');
-const { getExamsForStudent } = require('../controllers/exam.controller');
+const { getExamsForStudent, savePracticeHistory } = require('../controllers/exam.controller');
 const { getQuestionsForStudent } = require('../controllers/question.controller');
 const router = express.Router();
 
@@ -15,6 +15,7 @@ router.route('/exams/:subjectId')
   .get(getExamsForStudent)
 
 router.get('/questions/:subjectCode', getQuestionsForStudent);
+router.post('/exam/practice-history', savePracticeHistory);
 
 router.get('/profile', (req, res) => {
   res.json({
