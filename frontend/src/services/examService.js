@@ -62,8 +62,8 @@ class ExamService {
       const response = await apiClient.post('/admin/exams', examData);
       return {
         success: true,
-        data: response.data.data,
-        message: response.data.message
+        data: response.data,
+        message: response.message
       };
     } catch (error) {
       return {
@@ -80,8 +80,8 @@ class ExamService {
       const response = await apiClient.put(`/admin/exams/${id}`, examData);
       return {
         success: true,
-        data: response.data.data,
-        message: response.data.message
+        data: response.data,
+        message: response.message
       };
     } catch (error) {
       return {
@@ -114,7 +114,7 @@ class ExamService {
       const response = await apiClient.get('/admin/exams/stats');
       return {
         success: true,
-        data: response.data.data
+        data: response.data
       };
     } catch (error) {
       return {
@@ -130,8 +130,8 @@ class ExamService {
       const response = await apiClient.patch(`/admin/exams/${id}/toggle-status`);
       return {
         success: true,
-        data: response.data.data,
-        message: response.data.message
+        data: response.data,
+        message: response.message
       };
     } catch (error) {
       return {
@@ -147,8 +147,8 @@ class ExamService {
       const response = await apiClient.patch(`/admin/exams/${id}/toggle-published`);
       return {
         success: true,
-        data: response.data.data,
-        message: response.data.message
+        data: response.data,
+        message: response.message
       };
     } catch (error) {
       return {
@@ -164,7 +164,7 @@ class ExamService {
       const response = await apiClient.get(`/admin/exams/${examId}/questions`);
       return {
         success: true,
-        data: response.data.data
+        data: response.data
       };
     } catch (error) {
       return {
@@ -174,14 +174,16 @@ class ExamService {
     }
   }
 
+
+
   // Add question to exam
   async addQuestionToExam(examId, questionData) {
     try {
       const response = await apiClient.post(`/admin/exams/${examId}/questions`, questionData);
       return {
         success: true,
-        data: response.data.data,
-        message: response.data.message
+        data: response.data,
+        message: response.message
       };
     } catch (error) {
       return {
@@ -213,8 +215,8 @@ class ExamService {
       const response = await apiClient.put(`/admin/exams/${examId}/questions/${questionId}`, questionData);
       return {
         success: true,
-        data: response.data.data,
-        message: response.data.message
+        data: response.data,
+        message: response.message
       };
     } catch (error) {
       return {
@@ -230,8 +232,8 @@ class ExamService {
       const response = await apiClient.post(`/admin/exams/${id}/duplicate`, examData);
       return {
         success: true,
-        data: response.data.data,
-        message: response.data.message
+        data: response.data,
+        message: response.message
       };
     } catch (error) {
       return {

@@ -34,8 +34,6 @@ import {
   ReloadOutlined,
   SettingOutlined,
   QuestionCircleOutlined,
-  BookOutlined,
-  FileTextOutlined,
   EyeOutlined,
   CopyOutlined,
   FilterOutlined,
@@ -45,7 +43,6 @@ import {
   UploadOutlined,
   TagsOutlined,
   AppstoreOutlined,
-  DownloadOutlined
 } from '@ant-design/icons';
 import questionService from '../services/questionService';
 import subjectService from '../services/subjectService';
@@ -413,7 +410,7 @@ const QuestionManagement = () => {
     {
       title: 'STT',
       key: 'index',
-      width: 60,
+      width: 50,
       render: (_, __, index) => (
         <Text strong>{(pagination.current - 1) * pagination.pageSize + index + 1}</Text>
       )
@@ -422,12 +419,23 @@ const QuestionManagement = () => {
       title: 'Câu hỏi',
       dataIndex: 'questionText',
       key: 'questionText',
-      ellipsis: true,
+      width: 350,
       render: (text, record) => (
-        <Space direction="vertical" size="small" style={{ maxWidth: 300 }}>
-          <Text strong style={{ fontSize: '14px' }}>
-            {text.length > 100 ? `${text.substring(0, 100)}...` : text}
-          </Text>
+        <Space direction="vertical" size="small" style={{ maxWidth: 350, paddingRight: '10px' }}>
+          <div 
+            style={{ 
+              fontSize: '13px',
+              fontWeight: '700',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              lineHeight: '1.4',
+              wordBreak: 'break-word'
+            }}
+          >
+            {text.length > 120 ? `${text.substring(0, 120)}...` : text}
+          </div>
           <Space>
             <Tag color="blue">{record.subjectCode}</Tag>
             <Tag color="purple">{record.examTypeCode}</Tag>
@@ -446,7 +454,7 @@ const QuestionManagement = () => {
       key: 'optionsCount',
       width: 100,
       render: (_, record) => (
-        <Badge count={record.options?.length || 0} color="blue" />
+        <Badge count={record.options?.length || 0} color="blue" showZero />
       )
     },
     {
@@ -494,7 +502,7 @@ const QuestionManagement = () => {
       key: 'usageCount',
       width: 80,
       render: (count) => (
-        <Badge count={count || 0} overflowCount={99} />
+        <Badge count={count || 0} overflowCount={99} showZero />
       )
     },
     {
@@ -544,14 +552,14 @@ const QuestionManagement = () => {
             <Tooltip title="Chỉnh sửa">
               <Button
                 type="text"
-                icon={<EditOutlined />}
+                icon={<EditOutlined style={{ color: 'orangered' }} />}
                 onClick={() => handleCreateEdit(record)}
               />
             </Tooltip>
             <Tooltip title={record.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}>
               <Button
                 type="text"
-                icon={<SettingOutlined />}
+                icon={<SettingOutlined style={{ color: 'darkblue' }} />}
                 onClick={() => handleToggleStatus(record._id)}
               />
             </Tooltip>
@@ -833,7 +841,7 @@ const QuestionManagement = () => {
             }}
             onChange={handleTableChange}
             rowKey="_id"
-            size="middle"
+            size="small"
             scroll={{ x: 1400 }}
           />
         </Card>

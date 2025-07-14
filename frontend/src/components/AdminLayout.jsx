@@ -48,7 +48,8 @@ const AdminLayout = () => {
       '/exam-builder': '5-1',
       '/questions': '6',
       '/results': '7',
-      '/settings': '8'
+      '/notifications': '8',
+      '/settings': '9'
     };
     return pathToKey[location.pathname] || '1';
   };
@@ -64,6 +65,7 @@ const AdminLayout = () => {
       '/exam-builder': 'Tạo đề thi',
       '/questions': 'Ngân hàng câu hỏi',
       '/results': 'Kết quả quiz',
+      '/notifications': 'Quản lý thông báo',
       '/settings': 'Cài đặt hệ thống'
     };
     return pathToTitle[location.pathname] || 'Dashboard';
@@ -79,7 +81,8 @@ const AdminLayout = () => {
       '5-1': '/exam-builder',
       '6': '/questions',
       '7': '/results',
-      '8': '/settings'
+      '8': '/notifications',
+      '9': '/settings'
     };
     
     if (routes[key]) {
@@ -171,13 +174,19 @@ const AdminLayout = () => {
       onClick: () => handleMenuClick('7')
     },
     {
+      key: '8',
+      icon: <BellOutlined />,
+      label: 'Quản lý thông báo',
+      onClick: () => handleMenuClick('8')
+    },
+    {
       type: 'divider',
     },
     {
-      key: '8',
+      key: '9',
       icon: <SettingOutlined />,
       label: 'Cài đặt hệ thống',
-      onClick: () => handleMenuClick('8')
+      onClick: () => handleMenuClick('9')
     },
   ];
 

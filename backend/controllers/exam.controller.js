@@ -235,15 +235,16 @@ const createExam = async (req, res) => {
     const {
       examTitle,
       examCode,
-      subjectId,
-      examTypeId,
+      subjectCode,
+      examTypeCode,
       description,
       duration,
-      isActive = true
+      isActive = true,
+      questions = []
     } = req.body;
 
     // Check if subject exists
-    const subject = await Subject.findById(subjectId).populate('semester');
+    const subject = await Subject.findOne({subjectCode: subjectCode}).populate('semester');
     if (!subject) {
       return res.status(400).json({
         success: false,
@@ -252,7 +253,7 @@ const createExam = async (req, res) => {
     }
 
     // Check if exam type exists
-    const examType = await ExamType.findById(examTypeId);
+    const examType = await ExamType.findOne({typeCode: examTypeCode});
     if (!examType) {
       return res.status(400).json({
         success: false,
@@ -273,15 +274,32 @@ const createExam = async (req, res) => {
     const exam = await Exam.create({
       examTitle,
       examCode: examCode.toUpperCase(),
-      subjectId,
+      subjectId:subject._id,
       subjectCode: subject.subjectCode,
       semester: subject.semester.name,
-      examTypeId,
+      examTypeId:examType._id,
       examTypeCode: examType.typeCode,
       description,
       duration,
-      isActive
+      isActive,
+      totalQuestions: questions.length
     });
+
+    // Create exam questions if provided
+    if (questions && questions.length > 0) {
+      const examQuestions = questions.map((q, index) => ({
+        examId: exam._id,
+        questionBankId: q.questionBankId,
+        questionNumber: index + 1,
+        customPoints: q.points,
+        subjectCode: subject.subjectCode,
+        examTypeCode: examType.typeCode,
+        semester: subject.semester.name,
+        isActive: true
+      }));
+
+      await ExamQuestion.insertMany(examQuestions);
+    }
 
     // Populate for response
     await exam.populate([
@@ -333,7 +351,8 @@ const updateExam = async (req, res) => {
       examTypeId,
       description,
       duration,
-      isActive
+      isActive,
+      questions 
     } = req.body;
 
     // Check if exam exists
@@ -392,36 +411,89 @@ const updateExam = async (req, res) => {
       updateData.examTypeCode = examType.typeCode;
     }
 
-    const exam = await Exam.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      { new: true, runValidators: true }
-    ).populate([
-      { path: 'subjectId', select: 'subjectCode subjectName semester' },
-      { path: 'examTypeId', select: 'typeName typeCode description' }
-    ]);
+    // Start transaction for updating exam and questions
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-    // Log activity
-    await ActivityLog.logActivity({
-      userId: req.user._id,
-      userEmail: req.user.email,
-      userRole: req.user.role,
-      action: 'update_exam',
-      actionType: 'update',
-      resource: 'exam',
-      resourceId: exam._id.toString(),
-      description: `Cập nhật đề thi: ${exam.examCode} - ${exam.examTitle}`,
-      importance: 'medium',
-      ipAddress: req.ip,
-      userAgent: req.get('User-Agent'),
-      deviceType: 'web'
-    });
+    try {
+      // Update exam basic info
+      const exam = await Exam.findByIdAndUpdate(
+        req.params.id,
+        updateData,
+        { new: true, runValidators: true, session }
+      ).populate([
+        { path: 'subjectId', select: 'subjectCode subjectName semester' },
+        { path: 'examTypeId', select: 'typeName typeCode description' }
+      ]);
 
-    res.json({
-      success: true,
-      message: 'Cập nhật đề thi thành công',
-      data: exam
-    });
+      // Update questions only if questions field is explicitly provided
+      if (questions !== undefined && Array.isArray(questions)) {
+        // Remove all existing questions for this exam
+        await ExamQuestion.deleteMany({ examId: req.params.id }).session(session);
+
+        // Add new questions
+        if (questions.length > 0) {
+          const examQuestions = questions.map((q, index) => ({
+            examId: req.params.id,
+            questionBankId: q.questionBankId || q._id,
+            questionNumber: index + 1,
+            customQuestionText: q.customQuestionText,
+            customPoints: q.customPoints || q.defaultPoints,
+            customExplanation: q.customExplanation,
+            subjectCode: exam.subjectCode,
+            examTypeCode: exam.examTypeCode,
+            semester: exam.semester,
+            isActive: true
+          }));
+
+          await ExamQuestion.insertMany(examQuestions, { session });
+
+          // Update exam's total questions
+          await Exam.findByIdAndUpdate(
+            req.params.id,
+            { totalQuestions: questions.length },
+            { session }
+          );
+        } else {
+          // If no questions, set totalQuestions to 0
+          await Exam.findByIdAndUpdate(
+            req.params.id,
+            { totalQuestions: 0 },
+            { session }
+          );
+        }
+      }
+
+      await session.commitTransaction();
+
+      // Log activity
+      await ActivityLog.logActivity({
+        userId: req.user._id,
+        userEmail: req.user.email,
+        userRole: req.user.role,
+        action: 'update_exam',
+        actionType: 'update',
+        resource: 'exam',
+        resourceId: exam._id.toString(),
+        description: `Cập nhật đề thi: ${exam.examCode} - ${exam.examTitle}${questions && questions.length ? ` với ${questions.length} câu hỏi` : ''}`,
+        importance: 'medium',
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+        deviceType: 'web'
+      });
+
+      res.json({
+        success: true,
+        message: 'Cập nhật đề thi thành công',
+        data: exam
+      });
+
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
 
   } catch (error) {
     console.error('Update exam error:', error);
@@ -789,12 +861,77 @@ const savePracticeHistory = async (req, res) => {
       answers,
       isCompleted
     });
-
     await history.save();
     res.status(201).json({ success: true, data: history });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, error: 'Server Error' });
+  }
+};
+
+// @desc    Get exam questions
+// @route   GET /api/admin/exams/:id/questions  
+// @access  Private/Admin/Web
+const getExamQuestions = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Check if exam exists
+    const exam = await Exam.findById(id);
+    if (!exam) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy đề thi'
+      });
+    }
+
+    // Get exam questions with populated question bank data
+    const examQuestions = await ExamQuestion.find({ examId: id, isActive: true })
+      .populate({
+        path: 'questionBankId',
+        select: 'questionText questionType difficulty tags defaultPoints correctAnswer options explanation subjectCode examTypeCode'
+      })
+      .sort({ questionNumber: 1 })
+      .lean();
+
+    // Transform data for frontend
+    const questions = examQuestions.map(eq => ({
+      _id: eq.questionBankId._id,
+      questionText: eq.customQuestionText || eq.questionBankId.questionText,
+      questionType: eq.questionBankId.questionType,
+      difficulty: eq.questionBankId.difficulty,
+      tags: eq.questionBankId.tags,
+      defaultPoints: eq.customPoints || eq.questionBankId.defaultPoints,
+      correctAnswer: eq.questionBankId.correctAnswer,
+      options: eq.questionBankId.options,
+      explanation: eq.customExplanation || eq.questionBankId.explanation,
+      subjectCode: eq.questionBankId.subjectCode,
+      examTypeCode: eq.questionBankId.examTypeCode,
+      questionNumber: eq.questionNumber,
+      examQuestionId: eq._id
+    }));
+
+    res.json({
+      success: true,
+      data: {
+        exam: {
+          _id: exam._id,
+          examTitle: exam.examTitle,
+          examCode: exam.examCode,
+          totalQuestions: exam.totalQuestions
+        },
+        questions: questions,
+        totalQuestions: questions.length
+      }
+    });
+
+  } catch (error) {
+    console.error('Get exam questions error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi server khi lấy câu hỏi đề thi',
+      error: error.message
+    });
   }
 };
 module.exports = {
@@ -809,5 +946,6 @@ module.exports = {
   getExamTypes,
   duplicateExam,
   getExamsForStudent,
-  savePracticeHistory
+  savePracticeHistory,
+  getExamQuestions
 }; 

@@ -6,7 +6,8 @@ const subjectSchema = new mongoose.Schema({
     type: String,
     required: true,
     uppercase: true,
-    trim: true
+    trim: true,
+    unique: true
   }, // 'PRM392', 'EXE101', 'MAD101'
   subjectName: {
     type: String,
