@@ -868,6 +868,24 @@ const savePracticeHistory = async (req, res) => {
     res.status(500).json({ success: false, error: 'Server Error' });
   }
 };
+const getHistoryExamByUserId = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'User ID is required' });
+    }
+
+    const history = await PracticeHistory.find({ userSessionId: userId }).sort({ createdAt: -1 });
+    if (!history || history.length === 0) {
+      return res.status(404).json({ success: false, message: 'No practice history found for this user' });
+    }
+
+    res.json({ success: true, data: history });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: 'Server Error' });
+  }
+}
 
 // @desc    Get exam questions
 // @route   GET /api/admin/exams/:id/questions  
@@ -947,5 +965,6 @@ module.exports = {
   duplicateExam,
   getExamsForStudent,
   savePracticeHistory,
+  getHistoryExamByUserId,
   getExamQuestions
 }; 
