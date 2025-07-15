@@ -38,7 +38,7 @@ class SemesterService {
       const response = await apiClient.get(`/admin/semesters/${id}`);
       return {
         success: true,
-        data: response.data.data
+        data: response.data
       };
     } catch (error) {
       return {
@@ -54,8 +54,8 @@ class SemesterService {
       const response = await apiClient.post('/admin/semesters', semesterData);
       return {
         success: true,
-        data: response.data.data,
-        message: response.data.message
+        data: response.data,
+        message: response.message
       };
     } catch (error) {
       return {
@@ -72,8 +72,8 @@ class SemesterService {
       const response = await apiClient.put(`/admin/semesters/${id}`, semesterData);
       return {
         success: true,
-        data: response.data.data,
-        message: response.data.message
+        data: response.data,
+        message: response.message
       };
     } catch (error) {
       return {
@@ -106,7 +106,7 @@ class SemesterService {
       const response = await apiClient.get('/admin/semesters/stats');
       return {
         success: true,
-        data: response.data.data
+        data: response.data
       };
     } catch (error) {
       return {
@@ -122,8 +122,8 @@ class SemesterService {
       const response = await apiClient.patch(`/admin/semesters/${id}/toggle-status`);
       return {
         success: true,
-        data: response.data.data,
-        message: response.data.message
+        data: response.data,
+        message: response.message
       };
     } catch (error) {
       return {

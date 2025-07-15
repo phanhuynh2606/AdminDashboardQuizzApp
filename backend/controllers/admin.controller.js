@@ -1,5 +1,5 @@
-const User = require('../models/user.model');
-const { Exam, QuestionBank, Notification, ActivityLog } = require('../models');
+const { Exam, QuestionBank, Notification, ActivityLog, User } = require('../models');
+const admin = require('../config/firebase'); // Import Firebase Admin SDK
 
 // @desc    Get all users with pagination and filters
 // @route   GET /api/admin/users
@@ -339,7 +339,7 @@ const getDashboardStats = async (req, res) => {
     // Get notifications and activities for dashboard
     const [notifications, recentActivities] = await Promise.all([
       Notification.getActiveNotifications(req.user.role, 5),
-      ActivityLog.getDashboardActivities(5)
+      ActivityLog.getDashboardActivities(10)
     ]);
 
     res.json({
@@ -432,6 +432,53 @@ const createNotification = async (req, res) => {
 
     const notification = await Notification.create(notificationData);
     
+    // Send push notification if target audience is student or all
+    if (notification.targetAudience === 'student' || notification.targetAudience === 'all') {
+      try {
+        const studentUsers = await User.find({ role: 'student', isActive: true });
+        const fcmTokens = studentUsers.flatMap(user => user.fcmTokens || []).filter(Boolean);
+
+        if (fcmTokens.length > 0) {
+          const message = {
+            notification: {
+              title: notification.title,
+              body: notification.message,
+            },
+            data: {
+              notificationId: notification._id.toString(),
+              type: notification.type,
+              category: notification.category,
+              actionUrl: notification.metadata?.actionUrl || '',
+            },
+            // Optionally set Android specific options for sound/priority
+            android: {
+              priority: 'high',
+              notification: {
+                sound: 'default',
+              },
+            },
+            apns: {
+              payload: {
+                aps: {
+                  sound: 'default',
+                },
+              },
+            },
+          };
+
+          const response = await admin.messaging().sendEachForMulticast({
+            tokens: fcmTokens,
+            ...message
+          });
+
+          console.log('Successfully sent push notifications:', response);
+          // You might want to update fcmTokens if some were invalid
+        }
+      } catch (fcmError) {
+        console.error('Error sending push notification:', fcmError);
+      }
+    }
+
     // Log activity
     await ActivityLog.logActivity({
       userId: req.user._id,

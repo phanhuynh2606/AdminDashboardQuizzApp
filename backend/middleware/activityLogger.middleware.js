@@ -129,7 +129,7 @@ function generateDescription(actionType, resource, user, body) {
       'user': `${userDisplay} tạo người dùng mới`,
       'exam': `${userDisplay} tạo đề thi mới`,
       'question': `${userDisplay} thêm câu hỏi`,
-      'notification': `${userDisplay} tạo thông báo`,
+      'notification': `${userDisplay} tạo thông báo tới ${body.targetAudience === 'all' ? 'tất cả mọi người' : body.targetAudience === 'tài khoản admin' ? 'admin' : 'sinh viên'}`,
       'default': `${userDisplay} tạo ${resource} mới`
     },
     'update': {

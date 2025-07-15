@@ -58,7 +58,8 @@ const {
   toggleExamPublished,
   getExamStats,
   getExamTypes,
-  duplicateExam
+  duplicateExam,
+  getExamQuestions
 } = require('../controllers/exam.controller');
 
 // Question controllers
@@ -139,6 +140,7 @@ router.route('/exams/:id')
 router.patch('/exams/:id/toggle-status', toggleExamStatus);
 router.patch('/exams/:id/toggle-published', toggleExamPublished);
 router.post('/exams/:id/duplicate', duplicateExam);
+router.get('/exams/:id/questions', getExamQuestions);
 
 // Question management routes
 router.get('/questions/stats', getQuestionStats);

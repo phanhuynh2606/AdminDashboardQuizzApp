@@ -525,7 +525,7 @@ const ExamManagement = () => {
             <Tooltip title="Chỉnh sửa thông tin">
               <Button
                 type="text"
-                icon={<EditOutlined />}
+                icon={<EditOutlined style={{ color: 'orangered' }} />}
                 onClick={() => handleCreateEdit(record)}
               />
             </Tooltip>
@@ -540,7 +540,7 @@ const ExamManagement = () => {
             <Tooltip title={record.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}>
               <Button
                 type="text"
-                icon={<SettingOutlined />}
+                icon={<SettingOutlined style={{ color: 'darkblue' }} />}
                 onClick={() => handleToggleStatus(record._id)}
               />
             </Tooltip>

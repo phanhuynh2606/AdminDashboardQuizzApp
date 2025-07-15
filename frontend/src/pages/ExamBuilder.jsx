@@ -72,6 +72,7 @@ const ExamBuilder = () => {
   useEffect(() => {
     loadSubjects();
     if (id) {
+
       loadExamData(id);
     }
   }, [id]);
@@ -97,7 +98,7 @@ const ExamBuilder = () => {
         
         // Set form values
         form.setFieldsValue({
-          title: exam.title,
+          title: exam.examTitle,
           description: exam.description,
           subjectCode: exam.subjectCode,
           examTypeCode: exam.examTypeCode,
@@ -109,10 +110,13 @@ const ExamBuilder = () => {
         });
 
         // Load selected questions if editing
-        if (exam.questions && exam.questions.length > 0) {
-          setSelectedQuestions(exam.questions);
-        }
-        
+        await loadExamQuestions(examId);
+        const filters = {
+          ...questionFilters,
+          subjectCode: exam.subjectCode,
+          examType: exam.examTypeCode
+        };
+        loadQuestions(filters);
         setCurrentStep(1); // Start at question selection step
       }
     } catch (error) {
@@ -122,6 +126,21 @@ const ExamBuilder = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadExamQuestions = async (examId) => {
+    try {
+      const response = await examService.getExamQuestions(examId);
+      if (response.success) {
+        setSelectedQuestions(response.data.questions || []);
+      }
+    } catch (error) {
+      console.error('Error loading exam questions:', error);
+      notification.error({
+        message: 'Lỗi',
+        description: 'Không thể tải danh sách câu hỏi của đề thi'
+      });
     }
   };
 
@@ -212,18 +231,30 @@ const ExamBuilder = () => {
       setLoading(true);
       
       const examPayload = {
-        ...examData,
+        examTitle: examData.title,
+        examCode: examData.examCode || `${examData.subjectCode}_${examData.examTypeCode}_${Date.now()}`,
+        subjectCode: examData.subjectCode,
+        examTypeCode: examData.examTypeCode,
+        description: examData.description,
+        duration: examData.duration,
+        totalQuestions: examData.totalQuestions,
+        totalPoints: examData.totalPoints,
+        passingScore: examData.passingScore,
+        instructions: examData.instructions,
         questions: selectedQuestions.map(q => ({
           questionBankId: q._id,
-          points: q.defaultPoints || 1,
-          order: selectedQuestions.indexOf(q) + 1
+          customPoints: q.defaultPoints || 1,
+          customQuestionText: q.customQuestionText,
+          customExplanation: q.customExplanation
         }))
       };
 
       let response;
       if (id) {
+        // Update exam with questions
         response = await examService.updateExam(id, examPayload);
       } else {
+        // Create exam with questions  
         response = await examService.createExam(examPayload);
       }
 
@@ -232,7 +263,7 @@ const ExamBuilder = () => {
           message: 'Thành công',
           description: id ? 'Cập nhật đề thi thành công' : 'Tạo đề thi thành công'
         });
-        navigate('/admin/exams');
+        navigate('/exams');
       } else {
         notification.error({
           message: 'Lỗi',
@@ -393,7 +424,7 @@ const ExamBuilder = () => {
             <Space>
               <Button
                 icon={<ArrowLeftOutlined />}
-                onClick={() => navigate('/admin/exams')}
+                onClick={() => navigate('/exams')}
               >
                 Quay lại
               </Button>

@@ -45,7 +45,14 @@ const examSchema = new mongoose.Schema({
     uppercase: true,
     trim: true
   }, // 'FE', 'PE', 'QUIZ'
-
+  totalPoints: {
+    type: Number,
+    default: 0
+  },
+  passingScore:{
+    type: Number,
+    default: 40
+  },
   description: String,
   duration: {
     type: Number,
@@ -63,6 +70,10 @@ const examSchema = new mongoose.Schema({
   isPublished: {
     type: Boolean,
     default: false
+  },
+  instructions: {
+    type: String,
+    default: ''
   },
   link:{
     type: String,

@@ -43,7 +43,6 @@ const Login = () => {
 
     try {
       const result = await login(values.email, values.password);
-      console.log(result)
       if (result.success) {
         notification.success({
           message: 'Đăng nhập thành công!',
