@@ -141,7 +141,7 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   const { email, password, deviceType = 'android' } = req.body;
-  
+  console.log(password);
   if (!email || !password) {
     return res.status(400).json({ 
       success: false,

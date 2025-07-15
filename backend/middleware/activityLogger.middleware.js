@@ -363,6 +363,70 @@ const logLogoutAfterResponse = async (req, res, next) => {
   next();
 };
 
+// Special middleware for practice history (exam submission)
+const logPracticeHistorySubmission = async (req, res, next) => {
+  // Store original response methods
+  const originalSend = res.send;
+  const originalJson = res.json;
+  
+  // Flag to ensure we only log once
+  let hasLogged = false;
+  
+  const logOnce = async (data) => {
+    if (!hasLogged && res.statusCode >= 200 && res.statusCode < 300) {
+      hasLogged = true;
+      
+      try {
+        const user = req.user;
+        const { subjectCode, examType, score, totalQuestions ,
+correctAnswers} = req.body;
+        
+        if (user) {
+          const description = `${user.fullName || user.email} nộp bài thi ${examType} môn ${subjectCode} (${correctAnswers}/${totalQuestions} đúng, ${score} điểm)`;
+          
+          await ActivityLog.logActivity({
+            userId: user._id,
+            userEmail: user.email,
+            userRole: user.role,
+            action: 'submit_exam',
+            actionType: 'create',
+            resource: 'exam_submission',
+            resourceId: data?.data?.id || null,
+            description,
+            importance: 'medium',
+            ipAddress: req.ip || req.connection.remoteAddress,
+            userAgent: req.get('User-Agent'),
+            deviceType: req.body?.deviceType || 'android',
+            details: {
+              method: req.method,
+              url: req.originalUrl,
+              subjectCode,
+              examType,
+              score,
+              totalQuestions,
+              syncStatus: req.body?.syncStatus || 'synced'
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error logging practice history activity:', error);
+      }
+    }
+  };
+  
+  res.send = function(data) {
+    logOnce(data);
+    return originalSend.call(this, data);
+  };
+  
+  res.json = function(data) {
+    logOnce(data);
+    return originalJson.call(this, data);
+  };
+  
+  next();
+};
+
 // Specific middleware functions for common actions
 const logUserCreation = logActivity('create', 'user');
 const logUserUpdate = logActivity('update', 'user');  
@@ -385,9 +449,10 @@ module.exports = {
   logExamUpdate,
   logExamDeletion,
   logNotificationCreation,
+  logPracticeHistorySubmission,
   // New auth-specific middleware
   logRegisterActivity,
   logLoginActivity,
   logLogoutActivity,
   logLogoutAfterResponse
-}; 
+};

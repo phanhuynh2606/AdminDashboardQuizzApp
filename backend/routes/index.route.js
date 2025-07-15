@@ -1,7 +1,7 @@
 const authRoute = require("./auth.route");
 const adminRoute = require("./admin.route");
 const studentRoute = require("./student.route");
-
+const examHistoryRoute = require("./exam-history.route");
 const initialRoutes = (app) => {
    app.get('/', (req, res) => {
       res.json({ 
@@ -20,9 +20,11 @@ const initialRoutes = (app) => {
    
    // Admin routes (web only)
    app.use("/api/admin", adminRoute);
+   app.use("/api/admin/exam-history", examHistoryRoute);
    
    // Student routes (android only)
    app.use("/api/student", studentRoute);
+
    
    
 }

@@ -37,7 +37,7 @@ const practiceHistorySchema = new mongoose.Schema({
   answers: [{
     questionId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Question'
+      ref: 'QuestionBank'
     },
     selectedAnswer: String,
     isCorrect: Boolean

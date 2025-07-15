@@ -29,7 +29,7 @@ const activityLogSchema = new mongoose.Schema({
   
   actionType: {
     type: String,
-    enum: ['create', 'read', 'update', 'delete', 'login', 'logout', 'system'],
+    enum: ['create',"take" ,'read', 'update', 'delete', 'login', 'logout', 'system'],
     required: true
   }, // Loại hành động chính
   
@@ -132,7 +132,7 @@ activityLogSchema.statics.getRecentActivities = function(limit = 10) {
 
 activityLogSchema.statics.getDashboardActivities = function(limit = 5) {
   return this.find({
-    actionType: { $in: ['create','delete', 'login', 'update', 'system'] },
+    actionType: { $in: ['create',"take",'delete', 'login', 'update', 'system'] },
     importance: { $in: ['medium', 'high'] }
   })
   .sort({ createdAt: -1 })

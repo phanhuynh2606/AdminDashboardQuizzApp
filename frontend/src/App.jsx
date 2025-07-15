@@ -15,6 +15,7 @@ import ExamBuilder from './pages/ExamBuilder';
 import QuestionManagement from './pages/QuestionManagement';
 import NotificationManagement from './pages/NotificationManagement';
 import Settings from './pages/Settings';
+import QuizHistory from './pages/QuizHistory';
 
 // Configure Ant Design theme
 const theme = {
@@ -66,7 +67,7 @@ export default function App() {
               <Route path="exam-builder/:id" element={<ExamBuilder />} />
               <Route path="questions" element={<QuestionManagement />} />
               <Route path="notifications" element={<NotificationManagement />} />
-              <Route path="results" element={<div style={{ padding: '24px' }}>Kết quả quiz - Đang phát triển</div>} />
+              <Route path="results" element={<QuizHistory />} />
               <Route path="settings" element={<Settings />} />
             </Route>
             

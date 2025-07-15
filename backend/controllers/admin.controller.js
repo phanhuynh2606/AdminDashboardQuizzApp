@@ -608,7 +608,7 @@ const cleanActivityLogsByTime = async (req, res) => {
       action: 'clean_activities_by_time',
       actionType: 'delete',
       resource: 'activity_log',
-      description: `${req.user.fullName || req.user.email} dọn dẹp ${deleteResult.deletedCount} activity logs cũ hơn ${getPeriodDescription(period)}`,
+      description: `${req.user.fullName || req.user.email} dọn dẹp ${countToDelete} activity logs cũ hơn ${getPeriodDescription(period)}`,
       importance: 'medium',
       ipAddress: req.ip,
       userAgent: req.get('User-Agent'),

@@ -831,6 +831,7 @@ const duplicateExam = async (req, res) => {
   }
 };
 const savePracticeHistory = async (req, res) => {
+  const { user } = req;
   try {
     const {
       examId, 
@@ -862,6 +863,13 @@ const savePracticeHistory = async (req, res) => {
       isCompleted
     });
     await history.save();
+    //Cập nhật tổng số quiz và điểm trung bình
+    if (user) {
+      user.totalQuizzes = (user.totalQuizzes || 0) + 1;
+      user.averageScore = ((user.averageScore || 0) * (user.totalQuizzes - 1) + score) / user.totalQuizzes;
+      await user.save();
+    }
+
     res.status(201).json({ success: true, data: history });
   } catch (error) {
     console.error(error);

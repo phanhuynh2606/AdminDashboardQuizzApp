@@ -76,6 +76,7 @@ const {
   bulkDeleteQuestions,
   duplicateQuestion
 } = require('../controllers/question.controller');
+const { getExamsHistory } = require('../controllers/exam-history.controller');
 
 const router = express.Router();
 
@@ -141,6 +142,8 @@ router.patch('/exams/:id/toggle-status', toggleExamStatus);
 router.patch('/exams/:id/toggle-published', toggleExamPublished);
 router.post('/exams/:id/duplicate', duplicateExam);
 router.get('/exams/:id/questions', getExamQuestions);
+
+router.get("/exams/history", getExamsHistory);
 
 // Question management routes
 router.get('/questions/stats', getQuestionStats);
