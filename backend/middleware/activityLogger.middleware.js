@@ -378,11 +378,11 @@ const logPracticeHistorySubmission = async (req, res, next) => {
       
       try {
         const user = req.user;
-        const { subjectCode, examType, score, totalQuestions ,
+        const { subjectCode, examTypeCode, score, totalQuestions ,
 correctAnswers} = req.body;
         
         if (user) {
-          const description = `${user.fullName || user.email} nộp bài thi ${examType} môn ${subjectCode} (${correctAnswers}/${totalQuestions} đúng, ${score} điểm)`;
+          const description = `${user.email} nộp bài thi ${examTypeCode} môn ${subjectCode} (${correctAnswers}/${totalQuestions} đúng, ${score} điểm)`;
           
           await ActivityLog.logActivity({
             userId: user._id,
@@ -401,7 +401,7 @@ correctAnswers} = req.body;
               method: req.method,
               url: req.originalUrl,
               subjectCode,
-              examType,
+              examTypeCode,
               score,
               totalQuestions,
               syncStatus: req.body?.syncStatus || 'synced'

@@ -830,7 +830,7 @@ const duplicateExam = async (req, res) => {
     });
   }
 };
-const savePracticeHistory = async (req, res) => {
+const   savePracticeHistory = async (req, res) => {
   const { user } = req;
   try {
     const {

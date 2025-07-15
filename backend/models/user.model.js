@@ -65,8 +65,6 @@ const userSchema = new mongoose.Schema({
   averageScore: {
     type: Number,
     default: 0,
-    min: 0,
-    max: 10
   },
   totalStudyTime: {
     type: Number,
