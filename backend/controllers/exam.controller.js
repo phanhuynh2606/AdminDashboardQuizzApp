@@ -207,6 +207,8 @@ const getExamsForStudent = async (req, res) => {
       .populate('subjectId', 'subjectCode subjectName semester')
       .populate('examTypeId', 'typeName typeCode description')
       .sort({ createdAt: -1 });
+
+      
     if (exams.length === 0) {
       return res.status(404).json({
         success: false,
@@ -274,7 +276,7 @@ const createExam = async (req, res) => {
     const exam = await Exam.create({
       examTitle,
       examCode: examCode.toUpperCase(),
-      subjectId:subject._id,
+      subjectId: subject._id,
       subjectCode: subject.subjectCode,
       semester: subject.semester.name,
       examTypeId:examType._id,

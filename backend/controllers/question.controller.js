@@ -204,7 +204,7 @@ const createQuestion = async (req, res) => {
         message: 'Phải chọn ít nhất một đáp án đúng'
       });
     }
-
+    correctAnswer.answer =  correctAnswer.answers[0]; // Set first answer as default if not specified
     // Create question
     const question = await QuestionBank.create({
       questionText,
@@ -275,7 +275,10 @@ const updateQuestion = async (req, res) => {
     if (subjectCode) updateData.subjectCode = subjectCode.toUpperCase();
     if (examTypeCode) updateData.examTypeCode = examTypeCode.toUpperCase();
     if (options) updateData.options = options;
-    if (correctAnswer) updateData.correctAnswer = correctAnswer;
+    if (correctAnswer) {
+      correctAnswer.answer = correctAnswer.answers[0]; // Set first answer as default if not specified
+      updateData.correctAnswer = correctAnswer;
+    }
     if (explanation !== undefined) updateData.explanation = explanation;
     if (difficulty) updateData.difficulty = difficulty;
     if (defaultPoints !== undefined) updateData.defaultPoints = defaultPoints;
